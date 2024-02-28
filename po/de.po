@@ -446,8 +446,8 @@ msgstr ""
 "zurück, Fehlernummer %d (%s)\n"
 
 #: .././common/drive_minrmt.c:3823
-msgid "slave"
-msgstr "Slave"
+msgid "worker"
+msgstr "worker"
 
 #: .././common/drive_minrmt.c:3891 .././common/drive_minrmt.c:3899
 msgid "KB"
@@ -3971,11 +3971,6 @@ msgstr ""
 #: .././restore/content.c:9523
 msgid "no additional media objects needed\n"
 msgstr "keine zusätzlichen Mediendateien benötigt\n"
-
-#: .././restore/content.c:9547
-#, c-format
-msgid "fssetdm_by_handle of %s failed %s\n"
-msgstr "fssetdm_by_handle von %s fehlgeschlagen %s\n"
 
 #: .././restore/content.c:9566
 #, c-format

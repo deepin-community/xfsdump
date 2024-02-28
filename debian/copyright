@@ -1,14 +1,18 @@
-This package was debianized by Nathan Scott nathans@debian.org on
-Sun, 19 Nov 2000 07:37:09 -0500.
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Comment: This package was debianized by Nathan Scott <nathans@debian.org>.
+Source: https://www.kernel.org/pub/linux/utils/fs/xfs/xfsdump/
 
-It was downloaded from ftp://oss.sgi.com/projects/xfs/download/
+Files: *
+Copyright: (c) 1999-2006 Silicon Graphics, Inc.  All Rights Reserved.
+License: GPL
 
-Copyright:
+Files: common/getdents.c
+Copyright: (c) 2000-2001 Silicon Graphics, Inc.  All Rights Reserved.
+           (C) 1993, 95-99, 2000-2001 Free Software Foundation, Inc.
+License: GPL
 
-Copyright (c) 2000-2002 Silicon Graphics, Inc.  All Rights Reserved.
-
-You are free to distribute this software under the terms of
-the GNU General Public License.
-On Debian systems, the complete text of the GNU General Public
-License can be found in /usr/share/common-licenses/GPL file.
-
+License: GPL
+ You are free to distribute this software under the terms of
+ the GNU General Public License.
+ On Debian systems, the complete text of the GNU General Public
+ License can be found in /usr/share/common-licenses/GPL file.

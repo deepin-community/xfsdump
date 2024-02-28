@@ -12,11 +12,15 @@ options = export DEBUG=-DNDEBUG DISTRIBUTION=debian \
 	  INSTALL_USER=root INSTALL_GROUP=root ;
 checkdir = test -f debian/rules
 
-build: built
+build: build-arch build-indep
+
+build-arch: built
 built: config
 	@echo "== dpkg-buildpackage: build" 1>&2
 	$(MAKE) default
 	touch built
+
+build-indep:
 
 config: .census
 .census:
