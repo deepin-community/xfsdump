@@ -511,6 +511,60 @@ static bool_t create_inv_session(
 		ix_t subtreecnt,
 		size_t strmix);
 
+/*
+ * Verify that we are asked to dump from the root of the filesystem;
+ * test this by checking whether the inode number we've been given matches
+ * the inode number for this directory's ".."
+ */
+static bool_t
+check_rootdir(int fd,
+	      xfs_ino_t ino)
+{
+	struct dirent	*gdp;
+	size_t		gdsz;
+	bool_t		found = BOOL_FALSE;
+
+	gdsz = sizeof(struct dirent) + NAME_MAX + 1;
+	if (gdsz < GETDENTSBUF_SZ_MIN)
+		gdsz = GETDENTSBUF_SZ_MIN;
+	gdp = (struct dirent *)calloc(1, gdsz);
+	assert(gdp);
+
+	while (1) {
+		struct dirent *p;
+		int nread;
+
+		nread = getdents_wrap(fd, (char *)gdp, gdsz);
+		/*
+		 * negative count indicates something very bad happened;
+		 * try to gracefully end this dir.
+		 */
+		if (nread < 0) {
+			mlog(MLOG_NORMAL | MLOG_WARNING,
+_("unable to read dirents for directory ino %llu: %s\n"),
+			      ino, strerror(errno));
+			break;
+		}
+
+		/* no more directory entries: break; */
+		if (!nread)
+			break;
+
+		for (p = gdp; nread > 0;
+		     nread -= (int)p->d_reclen,
+		     assert(nread >= 0),
+		     p = (struct dirent *)((char *)p + p->d_reclen)) {
+			if (!strcmp(p->d_name, "..")) {
+				if (p->d_ino == ino)
+					found = BOOL_TRUE;
+				break;
+			}
+		}
+	}
+	free(gdp);
+	return found;
+}
+
 bool_t
 content_init(int argc,
 	      char *argv[],
@@ -1382,17 +1436,10 @@ baseuuidbypass:
 	}
 
 	/* figure out the ino for the root directory of the fs
-	 * and get its struct xfs_bstat for inomap_build().  This could
-	 * be a bind mount; don't ask for the mount point inode,
-	 * find the actual lowest inode number in the filesystem.
+	 * and get its xfs_bstat_t for inomap_build()
 	 */
 	{
 		stat64_t rootstat;
-		xfs_ino_t lastino = 0;
-		int ocount = 0;
-		struct xfs_fsop_bulkreq bulkreq;
-
-		/* Get the inode of the mount point */
 		rval = fstat64(sc_fsfd, &rootstat);
 		if (rval) {
 			mlog(MLOG_NORMAL, _(
@@ -1400,25 +1447,23 @@ baseuuidbypass:
 			      mntpnt);
 			return BOOL_FALSE;
 		}
+
+		if (!check_rootdir(sc_fsfd, rootstat.st_ino)) {
+			mlog(MLOG_ERROR,
+_("%s is not the root of the filesystem (bind mount?) - use primary mountpoint\n"),
+			     mntpnt);
+			return BOOL_FALSE;
+		}
+
 		sc_rootxfsstatp =
 			(struct xfs_bstat *)calloc(1, sizeof(struct xfs_bstat));
 		assert(sc_rootxfsstatp);
 
-		/* Get the first valid (i.e. root) inode in this fs */
-		bulkreq.lastip = (__u64 *)&lastino;
-		bulkreq.icount = 1;
-		bulkreq.ubuffer = sc_rootxfsstatp;
-		bulkreq.ocount = &ocount;
-		if (ioctl(sc_fsfd, XFS_IOC_FSBULKSTAT, &bulkreq) < 0) {
+		if (bigstat_one(sc_fsfd, rootstat.st_ino, sc_rootxfsstatp) < 0) {
 			mlog(MLOG_ERROR,
 			      _("failed to get bulkstat information for root inode\n"));
 			return BOOL_FALSE;
 		}
-
-		if (sc_rootxfsstatp->bs_ino != rootstat.st_ino)
-			mlog (MLOG_NORMAL | MLOG_NOTE,
-			       _("root ino %lld differs from mount dir ino %lld, bind mount?\n"),
-			         sc_rootxfsstatp->bs_ino, rootstat.st_ino);
 	}
 
 	/* alloc a file system handle, to be used with the jdm_open()
@@ -3883,9 +3928,6 @@ dump_file(void *arg1,
 	case S_IFCHR:
 	case S_IFBLK:
 	case S_IFIFO:
-#ifdef S_IFNAM
-	case S_IFNAM:
-#endif
 	case S_IFLNK:
 	case S_IFSOCK:
 		/* only need a filehdr_t; no data
@@ -3913,9 +3955,6 @@ dump_file(void *arg1,
 			contextp->cc_stat_lastino = statp->bs_ino;
 		}
 		return RV_OK;
-	/* not yet implemented
-	case S_IFMNT:
-	 */
 	}
 
 	if (rv == RV_OK
@@ -4293,7 +4332,6 @@ init_extent_group_context(jdm_fshandle_t *fshandlep,
 	gcp->eg_bmap[0].bmv_offset = 0;
 	gcp->eg_bmap[0].bmv_length = -1;
 	gcp->eg_bmap[0].bmv_count = BMAP_LEN;
-	gcp->eg_bmap[0].bmv_iflags = BMV_IF_NO_DMAPI_READ;
 	gcp->eg_nextbmapp = &gcp->eg_bmap[1];
 	gcp->eg_endbmapp = &gcp->eg_bmap[1];
 	gcp->eg_bmapix = 0;

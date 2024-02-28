@@ -1,3 +1,27 @@
+xfsdump (3.1.11-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * New upstream release (Closes: #1013549)
+  * Switch to 3.0 (quilt) format (Closes: #1007287)
+  * Remove ancient versioned Conflicts
+
+ -- Bastian Germann <bage@debian.org>  Sun, 16 Oct 2022 21:44:56 +0200
+
+xfsdump (3.1.9+0+nmu2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * debian/compat: 5 -> 7. (Closes: #965900)
+
+ -- Adrian Bunk <bunk@debian.org>  Wed, 19 Jan 2022 12:22:32 +0200
+
+xfsdump (3.1.9+0+nmu1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * add build-arch and build-indep targets to debian/rules
+    Closes: #999291
+
+ -- Damyan Ivanov <dmn@debian.org>  Thu, 16 Dec 2021 08:44:12 +0000
+
 xfsdump (3.1.9+0) unstable; urgency=medium
 
   * In postinst, create as needed the xfsdump and xfsrestore symlinks

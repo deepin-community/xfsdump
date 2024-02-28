@@ -1,0 +1,31 @@
+From: Goffredo Baroncelli <kreijack@inwind.it>
+Date: Fri, 13 Mar 2020 16:13:27 +0100
+Subject: Build independently of usr-merge status on host
+---
+diff --git a/dump/Makefile b/dump/Makefile
+index 66f00d3..0225878 100644
+--- a/dump/Makefile
++++ b/dump/Makefile
+@@ -100,9 +100,6 @@ install: default
+ 	$(INSTALL) -m 755 -d $(PKG_ROOT_SBIN_DIR)
+ 	$(LTINSTALL) -m 755 $(LTCOMMAND) $(PKG_ROOT_SBIN_DIR)
+ 	$(INSTALL) -m 755 -d $(PKG_SBIN_DIR)
+-	# skip symlink when /sbin is alread symlinked to /usr/sbin, like on Fedora
+-	test $(PKG_ROOT_SBIN_DIR) -ef $(PKG_SBIN_DIR) || \
+-		$(INSTALL) -S $(PKG_ROOT_SBIN_DIR)/$(LTCOMMAND) $(PKG_SBIN_DIR)/$(LTCOMMAND)
+ install-dev:
+ 
+ .dep: $(COMMINCL) $(COMMON) $(INVINCL) $(INVCOMMON)
+diff --git a/restore/Makefile b/restore/Makefile
+index ac3f8c8..9d25cad 100644
+--- a/restore/Makefile
++++ b/restore/Makefile
+@@ -115,8 +115,6 @@ install: default
+ 	$(LTINSTALL) -m 755 $(LTCOMMAND) $(PKG_ROOT_SBIN_DIR)
+ 	$(INSTALL) -m 755 -d $(PKG_SBIN_DIR)
+ 	# skip symlink when /sbin is alread symlinked to /usr/sbin, like on Fedora
+-	test $(PKG_ROOT_SBIN_DIR) -ef $(PKG_SBIN_DIR) || \
+-		$(INSTALL) -S $(PKG_ROOT_SBIN_DIR)/$(LTCOMMAND) $(PKG_SBIN_DIR)/$(LTCOMMAND)
+ install-dev:
+ 
+ .dep: $(COMMINCL) $(COMMON) $(INVINCL) $(INVCOMMON)
